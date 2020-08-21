@@ -1,24 +1,183 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class Vendor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    vendor_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
+    orders = db.Column(db.String(1000))
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    orders = db.relationship('Order', backref='vendor', lazy=True)
+
+    def __init__(self, vendor_name, email, password, phone, orders):
+        self.vendor_name = vendor_name
+        self.email = email
+        self.password = password
+        self.phone = phone
+        self.orders = orders
+        self.is_active = True
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<Vendor %r>' % self.vendor #what goes here?
 
     def serialize(self):
         return {
             "id": self.id,
+            "vendor_name": self.vendor_name,
             "email": self.email,
+            "phone": self.phone,
+            "orders": self.phone
             # do not serialize the password, its a security breach
         }
 
 
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime, nullable=False)
+    cancel_order = db.Column(db.DateTime, nullable=True)
+    closed_at = db.Column(db.DateTime, nullable=False)
+    expected_pickup = db.Column(db.DateTime, nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
+    sub_total_price = db.Column(db.Float, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+
+    def __init__(self, name, email, phone, created_at, started_at, cancel_order, close_at, expected_pickup, vendor_id, sub_total_price, total_price):
+        self.name = name
+        self.email = email
+        self.phone = phone
+        self.created_at = created_at
+        self.started_at = started_at
+        #sub_total_price = None ???
+
+    def __ref__(self):
+         return '<Order %r>'%self.order #What goes here? is .order right?
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "name":self.name,
+            "email":self.email,
+            "phone":self.Phone,
+            "created_at":self.created_at,
+            "started_at":self.started_at,
+            "cancel_order":self.cancel_order,
+            "closed_at":self.closed_at,
+            "expected_pickup":self.expected_pickup,
+            "vendor_id":self.vendor_id,
+            "sub_total_price":self.sub_total_price,
+            "total_price":self.total_price,
+            
+        }
+
 
 
     
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id=db.Column(db.Integer(1000), db.ForeignKey('order.id'), nullable=False)
+    product_id=db.Column(db.Integer(1000), db.ForeignKey('product.id'), nullable=False)
+    quantity=db.Column(db.Integer(1000), nullable=False)
+    unit_price=db.Column(db.Decimal(1000), nullable=False)
+    special_instructions=db.Column(db.String(1000), nullable=True)
+
+    def __init__(self, order_id, Product_id, quantity, unit_price):
+        self.order_id = order_id
+        self.product_id = product_id
+        self.quantity = quantity
+        self.unit_price = unit_price
+    
+    def __ref__(self):
+         return '<OrderItem %r>'%self.order_item
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "order_id":self.order_id,
+            "product_id":self.produce_id,
+            "quantity":self.quantity,
+            "unit_price":self.unit_price,
+        }
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(100), nullable=False)
+    category=db.Column(db.String(1000), nullable=False)
+    price=db.Column(db.Decimal(10000), nullable=False)
+
+    def __init__(self, name, category, price):
+        self.name = name
+        self.category = category
+        self.price=price
+    
+    def __ref__(self):
+         return '<OrderItems %r>'%self.product
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "name":self.name,
+            "category":self.category,
+            "price":self.price,
+        }
+
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id=db.Column(db.Integer(10000), db.ForeignKey('order.id'), nullable=False)
+    total_price=db.Column(db.Decimal(100000), nullable=False)
+    payment_date=db.Column(db.Decimal(10000), nullable=False)
+    payment_type=db.Column(db.String(10000), nullable=False)
+
+    def __init__(self, order_id, total_price, payment_date, payment_type):
+        self.order_id = order_id
+        self.total_price = total_price
+        self.payment_date=payment_date
+        self.payment_type=payment_type
+    
+    def __ref__(self):
+         return '<Payment %r>'%self.payment
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "order_id":self.order_id,
+            "total_price":self.total_price,
+            "payment_date":self.payment_date,
+            "payment_type":self.payment_type,
+        }
+
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    longitude=db.Column(db.Decimal(10000), nullable=False)
+    latitude=db.Column(db.Decimal(100000), nullable=False)
+    vendor_id=db.Column(db.Integer(10000), db.ForeignKey('vendor.id')nullable=False)
+    is_open=db.Column(db.Boolean(10000), nullable=False)
+
+    def __init__(self, longitude, latitude, vendor_id, is_open):
+        self.longitude = longitude
+        self.latitude = latitude
+        self.vendor_id=vendor_id
+        self.is_open=is_open
+    
+    def __ref__(self):
+         return '<Location %r>'%self.location
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "longitude":self.longitude,
+            "latitude":self.latitude,
+            "vendor_id":self.vendor_id,
+            "is_open":self.is_open,
+        }
+
+
+
