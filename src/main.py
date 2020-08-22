@@ -58,7 +58,7 @@ def handle_signup():
         except Exception as error:
             db.session.rollback()
             return jsonify({
-                "msg": "error"
+                "msg": error.args
             }), 500
     else:
         return jsonify({

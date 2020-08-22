@@ -12,6 +12,7 @@ class Vendor(db.Model):
     orders = db.Column(db.String(1000))
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
     orders = db.relationship('Order', backref='vendor', lazy=True)
+    location=db.relationship('Location', backref='vendor', uselist=False)
 
     def __init__(self, vendor_name, email, password, phone, orders):
         self.vendor_name = vendor_name
@@ -46,8 +47,10 @@ class Order(db.Model):
     closed_at = db.Column(db.DateTime, nullable=False)
     expected_pickup = db.Column(db.DateTime, nullable=False)
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
-    sub_total_price = db.Column(db.Float, nullable=False)
-    total_price = db.Column(db.Float, nullable=False)
+    sub_total_price = db.Column(db.Float(asdecimal=True), nullable=False)
+    total_price = db.Column(db.Float(asdecimal=True), nullable=False)
+    payment=db.relationship('Payment', backref='order', uselist=False) 
+    order_items=db.relationship('OrderItem', backref='order', lazy=True)
 
     def __init__(self, name, email, phone, created_at, started_at, cancel_order, close_at, expected_pickup, vendor_id, sub_total_price, total_price):
         self.name = name
@@ -82,10 +85,10 @@ class Order(db.Model):
     
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id=db.Column(db.Integer(1000), db.ForeignKey('order.id'), nullable=False)
-    product_id=db.Column(db.Integer(1000), db.ForeignKey('product.id'), nullable=False)
-    quantity=db.Column(db.Integer(1000), nullable=False)
-    unit_price=db.Column(db.Decimal(1000), nullable=False)
+    order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    product_id=db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity=db.Column(db.Integer, nullable=False)
+    unit_price=db.Column(db.Float(asdecimal=True), nullable=False)
     special_instructions=db.Column(db.String(1000), nullable=True)
 
     def __init__(self, order_id, Product_id, quantity, unit_price):
@@ -110,7 +113,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String(100), nullable=False)
     category=db.Column(db.String(1000), nullable=False)
-    price=db.Column(db.Decimal(10000), nullable=False)
+    price=db.Column(db.Float(asdecimal=True), nullable=False)
+    order_items=db.relationship('OrderItem', backref='product', lazy=True)
 
     def __init__(self, name, category, price):
         self.name = name
@@ -131,10 +135,10 @@ class Product(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id=db.Column(db.Integer(10000), db.ForeignKey('order.id'), nullable=False)
-    total_price=db.Column(db.Decimal(100000), nullable=False)
-    payment_date=db.Column(db.Decimal(10000), nullable=False)
-    payment_type=db.Column(db.String(10000), nullable=False)
+    order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    total_price=db.Column(db.Float(asdecimal=True), nullable=False)
+    payment_date=db.Column(db.DateTime(timezone=True), nullable=False)
+    payment_type=db.Column(db.String(20), nullable=False)
 
     def __init__(self, order_id, total_price, payment_date, payment_type):
         self.order_id = order_id
@@ -156,10 +160,10 @@ class Payment(db.Model):
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    longitude=db.Column(db.Decimal(10000), nullable=False)
-    latitude=db.Column(db.Decimal(100000), nullable=False)
-    vendor_id=db.Column(db.Integer(10000), db.ForeignKey('vendor.id')nullable=False)
-    is_open=db.Column(db.Boolean(10000), nullable=False)
+    longitude=db.Column(db.String(16), nullable=False)
+    latitude=db.Column(db.String(16), nullable=False)
+    vendor_id=db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
+    is_open=db.Column(db.Boolean(), nullable=False)
 
     def __init__(self, longitude, latitude, vendor_id, is_open):
         self.longitude = longitude
