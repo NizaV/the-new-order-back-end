@@ -9,17 +9,16 @@ class Vendor(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=False)
-    orders = db.Column(db.String(1000))
+    orders = db.Column(db.String(1000), nullable=True)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
     orders = db.relationship('Order', backref='vendor', lazy=True)
     location=db.relationship('Location', backref='vendor', uselist=False)
 
-    def __init__(self, vendor_name, email, password, phone, orders):
+    def __init__(self, vendor_name, email, password, phone):
         self.vendor_name = vendor_name
         self.email = email
         self.password = password
         self.phone = phone
-        self.orders = orders
         self.is_active = True
 
     def __repr__(self):

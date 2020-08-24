@@ -46,10 +46,12 @@ def handle_hello():
 @app.route('/signup', methods=['POST'])
 def handle_signup():
     input_data = request.json
-    if 'email' in input_data and 'password' in input_data:
+    if 'vendor_name' in input_data and 'email' in input_data and 'password' in input_data and 'phone' in input_data:
         new_vendor = Vendor(
+            input_data['vendor_name'],
             input_data['email'],
-            input_data['password']
+            input_data['password'],
+            input_data['phone']
         )
         db.session.add(new_vendor)
         try:
