@@ -82,26 +82,26 @@ def login():
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
-    vendor = Vendor.query.filter_by(email= email).one_or_none()
-    if vendor is None:
-        return jsonify({"msg": "Email not found"}), 404
-    else:
-        if password == vendor.password:
-            return jsonify({
-                token: create_jwt(identity=vendor.id),
-                vendor: vendor.serialize()
-            }), 200
-        else: 
-            return jsonify({"msg": "Bad email or password"}), 401
+    # vendor = Vendor.query.filter_by(email= email).one_or_none()
+    # if vendor is None:
+    #     return jsonify({"msg": "Email not found"}), 404
+    # else:
+    #     if password == vendor.password:
+    #         return jsonify({
+    #             token: create_jwt(identity=vendor.id),
+    #             vendor: vendor.serialize()
+    #         }), 200
+    #     else: 
+    #         return jsonify({"msg": "Bad email or password"}), 
 
-specific_vendor = Vendor.query.filter_by(
+    specific_vendor = Vendor.query.filter_by(
         email=email
     ).one_or_none()
     if isinstance(specific_vendor, Vendor):
         if specific_vendor.password == password:
             # oh, this person is who it claims to be!
             # Identity can be any data that is json serializable
-            response = {'jwt': create_jwt(identity=specific_vendor.id)}
+            response = {'jwt': create_jwt(identity=specific_vendor.id), "vendor": specific_vendor.serialize()}
             return jsonify(response), 200
 
         else:
