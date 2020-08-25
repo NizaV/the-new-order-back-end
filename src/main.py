@@ -94,6 +94,47 @@ def login():
         else: 
             return jsonify({"msg": "Bad email or password"}), 401
 
+specific_vendor = Vendor.query.filter_by(
+        email=email
+    ).one_or_none()
+    if isinstance(specific_vendor, Vendor):
+        if specific_vendor.password == password:
+            # oh, this person is who it claims to be!
+            # Identity can be any data that is json serializable
+            response = {'jwt': create_jwt(identity=specific_vendor.id)}
+            return jsonify(response), 200
+
+        else:
+            return jsonify({
+            "msg": "bad credentials"
+        }), 400
+    else:
+        return jsonify({
+            "msg": "bad credentials"
+        }), 400
+
+    # if username != 'test' or password != 'test':
+    #     return jsonify({"msg": "Bad username or password"}), 401
+@app.route('/protected', methods=['GET'])
+@jwt_required
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    specific_vendor_id = get_jwt_identity()
+    specific_vendor = Vendor.query.filter_by(
+        id=specific_vendor_id
+    ).one_or_none()
+    # specific_user = User.query.get(specific_user_id)
+    if specific_vendor is None:
+        return jsonify({
+            "msg": "user not found"
+        }), 404
+    else:
+        return jsonify({
+            "msg": "Yay! You sent your token correctly so I know who you are!",
+            "vendor_data": specific_vendor.serialize()
+        }), 200
+    
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
