@@ -82,9 +82,17 @@ def login():
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
-
-    if email != 'test' or password != 'test':
-        return jsonify({"msg": "Bad email or password"}), 401
+    vendor = Vendor.query.filter_by(email= email).one_or_none()
+    if vendor is None:
+        return jsonify({"msg": "Email not found"}), 404
+    else:
+        if password == vendor.password:
+            return jsonify({
+                token: create_jwt(identity=vendor.id),
+                vendor: vendor.serialize()
+            }), 200
+        else: 
+            return jsonify({"msg": "Bad email or password"}), 401
 
 
 # this only runs if `$ python src/main.py` is executed
