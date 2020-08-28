@@ -20,9 +20,11 @@ class Vendor(db.Model):
         self.password = password
         self.phone = phone
         self.is_active = True
+    
+    # products=[] #ask ernesto
 
     def __repr__(self):
-        return '<Vendor %r>' % self.vendor #what goes here?
+        return '<Vendor %r>' % self.vendor
 
     def serialize(self):
         return {
@@ -30,7 +32,7 @@ class Vendor(db.Model):
             "vendor_name": self.vendor_name,
             "email": self.email,
             "phone": self.phone,
-            "orders": self.phone
+            "orders": self.orders
             # do not serialize the password, its a security breach
         }
 
@@ -114,11 +116,15 @@ class Product(db.Model):
     category=db.Column(db.String(1000), nullable=False)
     price=db.Column(db.Float(asdecimal=True), nullable=False)
     order_items=db.relationship('OrderItem', backref='product', lazy=True)
+    vendor_id=db.relationship('Vendor', backref='vendor')
 
-    def __init__(self, name, category, price):
+    def __init__(self, name, category, price, vendor_id):
         self.name = name
         self.category = category
         self.price=price
+        self.vendor_id= vendor_id
+
+    # vendor= Product('Burger', 'Main', 5.99, 1) #ask ernesto
     
     def __ref__(self):
          return '<OrderItems %r>'%self.product
