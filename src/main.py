@@ -150,6 +150,59 @@ def handle_vendors():
             payload.append(vendor.serialize())
         return jsonify(payload), 200
 
+
+# Item Add Edit Page
+
+@app.route('/itemAddEdit', methods=['GET'])
+@jwt_required
+def menuItems():
+    # Access the identity of the current user with get_jwt_identity
+    specific_vendor_id = get_jwt_identity()
+    specific_vendor = menuItems.query.filter_by(
+        id=specific_vendor_id
+    ).one_or_none()
+    # specific_user = User.query.get(specific_user_id)
+    if specific_vendor is None:
+        return jsonify({
+            "msg": "Menu not found"
+        }), 404
+    else:
+        return jsonify({
+            "msg": "Yay! You sent your token correctly so I know who you are!",
+            "vendor_data": specific_vendor.serialize()
+        }), 200
+
+
+@app.route('/add', methods=['POST'])
+def add_menu_item():
+    body = request.get_json()
+    item = Menu Item(menu_item=body['menu_item'], price=body['price'], description=body['description'])
+    db.session.add(item)
+    db.session.commit()
+    print(item)
+    return jsonify(item.serialize()), 200
+
+
+@app.route('/edit/<int:id>', methods=['PUT'])
+def edit_menu_item(id):
+    body = request.get_json()
+    item = Item.query.get(id)
+    if item is None:
+        raise APIException('Menu item not found', status_code=404)
+
+
+@app.route('/delete/<int:id>', methods=['DELETE'])
+def delete_menu_item(id):
+    item = Item.query.get(id)
+    if item is None:
+        raise APIException('Item not found', status_code=404)
+    db.session.delete(item)
+    db.session.commit()
+    response_body = {
+        "msg": "Hello, you just deleted a menu item"
+
+    
+
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
