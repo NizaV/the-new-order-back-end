@@ -134,7 +134,21 @@ def protected():
             "vendor_data": specific_vendor.serialize()
         }), 200
     
+@app.route('/vendors', methods=['GET'])
+def handle_vendors():
+    vendors=Vendor.query.filter_by(is_active=True).all()
+    payload=[]
+    search_name=request.args.get("name")
+    if search_name is None:
 
+        for vendor in vendors:
+            payload.append(vendor.serialize())
+        return jsonify(payload), 200
+    else:
+        filter_vendors=list(filter(lambda vendor: search_name in vendor.vendor_name.lower(), vendors))
+        for vendor in filter_vendors:
+            payload.append(vendor.serialize())
+        return jsonify(payload), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

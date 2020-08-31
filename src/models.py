@@ -9,11 +9,11 @@ class Vendor(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=False)
-    orders = db.Column(db.String(1000), nullable=True)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
     orders = db.relationship('Order', backref='vendor', lazy=True)
-    location=db.relationship('Location', backref='vendor', uselist=False)
-
+    location= db.relationship('Location', backref='vendor', uselist=False)
+    products= db.relationship('Product', backref='vendor', lazy=True)
+    
     def __init__(self, vendor_name, email, password, phone):
         self.vendor_name = vendor_name
         self.email = email
@@ -37,53 +37,6 @@ class Vendor(db.Model):
         }
 
 
-class Order(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    started_at = db.Column(db.DateTime, nullable=False)
-    cancel_order = db.Column(db.DateTime, nullable=True)
-    closed_at = db.Column(db.DateTime, nullable=False)
-    expected_pickup = db.Column(db.DateTime, nullable=False)
-    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
-    sub_total_price = db.Column(db.Float(asdecimal=True), nullable=False)
-    total_price = db.Column(db.Float(asdecimal=True), nullable=False)
-    payment=db.relationship('Payment', backref='order', uselist=False) 
-    order_items=db.relationship('OrderItem', backref='order', lazy=True)
-
-    def __init__(self, name, email, phone, created_at, started_at, cancel_order, close_at, expected_pickup, vendor_id, sub_total_price, total_price):
-        self.name = name
-        self.email = email
-        self.phone = phone
-        self.created_at = created_at
-        self.started_at = started_at
-        #sub_total_price = None ???
-
-    def __ref__(self):
-         return '<Order %r>'%self.order #What goes here? is .order right?
-
-    def serialize(self):
-        return{
-            "id":self.id,
-            "name":self.name,
-            "email":self.email,
-            "phone":self.Phone,
-            "created_at":self.created_at,
-            "started_at":self.started_at,
-            "cancel_order":self.cancel_order,
-            "closed_at":self.closed_at,
-            "expected_pickup":self.expected_pickup,
-            "vendor_id":self.vendor_id,
-            "sub_total_price":self.sub_total_price,
-            "total_price":self.total_price,
-            
-        }
-
-
-
-    
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
@@ -115,8 +68,8 @@ class Product(db.Model):
     name=db.Column(db.String(100), nullable=False)
     category=db.Column(db.String(1000), nullable=False)
     price=db.Column(db.Float(asdecimal=True), nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
     order_items=db.relationship('OrderItem', backref='product', lazy=True)
-    vendor_id=db.relationship('Vendor', backref='vendor')
 
     def __init__(self, name, category, price, vendor_id):
         self.name = name
@@ -188,5 +141,49 @@ class Location(db.Model):
             "is_open":self.is_open,
         }
 
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime)
+    cancel_order = db.Column(db.DateTime)
+    closed_at = db.Column(db.DateTime)
+    expected_pickup = db.Column(db.DateTime, nullable=False)
+    sub_total_price = db.Column(db.Float(asdecimal=True), nullable=False)
+    total_price = db.Column(db.Float(asdecimal=True), nullable=False)
+    payment = db.relationship('Payment', backref='order', uselist=False) 
+    order_items = db.relationship('OrderItem', backref='order', lazy=True)
+
+    def __init__(self, name, email, phone, created_at, started_at, cancel_order, close_at, expected_pickup, vendor_id, sub_total_price, total_price):
+        self.name = name
+        self.email = email
+        self.phone = phone
+        self.created_at = created_at
+        self.started_at = started_at
+        #sub_total_price = None ???
+
+    def __ref__(self):
+         return '<Order %r>'%self.order #What goes here? is .order right?
+
+    def serialize(self):
+        return{
+            "id":self.id,
+            "name":self.name,
+            "email":self.email,
+            "phone":self.Phone,
+            "created_at":self.created_at,
+            "started_at":self.started_at,
+            "cancel_order":self.cancel_order,
+            "closed_at":self.closed_at,
+            "expected_pickup":self.expected_pickup,
+            "vendor_id":self.vendor_id,
+            "sub_total_price":self.sub_total_price,
+            "total_price":self.total_price,
+            
+        }
 
 
