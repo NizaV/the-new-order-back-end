@@ -32,7 +32,8 @@ class Vendor(db.Model):
             "vendor_name": self.vendor_name,
             "email": self.email,
             "phone": self.phone,
-            "orders": self.orders
+            "orders": self.orders,
+            "products": list(map(lambda x:x.serialize(), self.products))
             # do not serialize the password, its a security breach
         }
 
