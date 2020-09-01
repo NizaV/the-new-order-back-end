@@ -176,7 +176,7 @@ def menuItems():
 @app.route('/add', methods=['POST'])
 def add_menu_item():
     body = request.get_json()
-    item = Menu Item(menu_item=body['menu_item'], price=body['price'], description=body['description'])
+    item = MenuItem(menu_item=body['menu_item'], price=body['price'], description=body['description'])
     db.session.add(item)
     db.session.commit()
     print(item)
@@ -200,6 +200,21 @@ def delete_menu_item(id):
     db.session.commit()
     response_body = {
         "msg": "Hello, you just deleted a menu item"
+    }
+
+
+#Admin Main Menu Page
+
+@app.route('/orders', methods=['GET'])
+def get_all_orders():
+    orders = Orders.query.all() #way to get all the orders
+    seri_orders= []
+    for order in orders:
+        seri_orders.append(order.serialize())
+    print(orders)
+    return jsonify(seri_orders), 200
+
+
 
     
 
