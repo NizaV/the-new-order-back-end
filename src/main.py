@@ -176,7 +176,7 @@ def menuItems():
 @app.route('/add', methods=['POST'])
 def add_menu_item():
     body = request.get_json()
-    item = Menu Item(menu_item=body['menu_item'], price=body['price'], description=body['description'])
+    item = MenuItem(menu_item=body['menu_item'], price=body['price'], description=body['description'])
     db.session.add(item)
     db.session.commit()
     print(item)
@@ -200,7 +200,7 @@ def delete_menu_item(id):
     db.session.commit()
     response_body = {
         "msg": "Hello, you just deleted a menu item"
-
+    }
     
 
 # this only runs if `$ python src/main.py` is executed
