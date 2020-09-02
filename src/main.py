@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Vendor
+from models import db, Vendor, Product
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt_identity, jwt_required
 #from models import Person
 
@@ -153,26 +153,69 @@ def handle_vendors():
 
 # Item Add Edit Page
 
-@app.route('/itemAddEdit', methods=['GET'])
+@app.route('/menu-items', methods=['GET', 'POST'])
+@app.route('/menu-items/<item_id>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required
-def menuItems():
-    # Access the identity of the current user with get_jwt_identity
+def menuItems(item_id=None):
+    # Get All Menu Items
     specific_vendor_id = get_jwt_identity()
-    specific_vendor = menuItems.query.filter_by(
-        id=specific_vendor_id
-    ).one_or_none()
-    # specific_user = User.query.get(specific_user_id)
-    if specific_vendor is None:
-        return jsonify({
-            "msg": "Menu not found"
-        }), 404
-    else:
-        return jsonify({
-            "msg": "Yay! You sent your token correctly so I know who you are!",
-            "vendor_data": specific_vendor.serialize()
-        }), 200
+    if request.method=='GET':
+        if item_id is None: 
+            vendor_items = Product.query.filter_by(
+                vendor_id=specific_vendor_id
+            ).all()
+            serialized_items=[]
+            for item in vendor_items:
+                serialized_items.append(item.serialize())
+            return jsonify(serialized_items), 200
+        else: 
+            specific_item = Product.query.filter_by(id=item_id).one_or_none()
+            return jsonify(specific_item.serialize()), 200
+    elif request.method=='POST':
+        body = request.get_json()
+        item = Product(name=body['name'],category=body['category'], vendor_id=specific_vendor_id, price=body['price'], description=body['description'])
+        db.session.add(item)
+        db.session.commit()
+        print(item)
+        return jsonify(item.serialize()), 201
+
+    elif request.method=='PUT':
+        body = request.get_json()
+        item = Product.query.get(item_id)
+        if item is None:
+            raise APIException('Menu item not found', status_code=404)
+        if 'name' in body:
+            item.name=body['name']
+        if 'price' in body:
+            item.name=body['price']
+        if 'description' in body:
+            item.name=body['description']
+        if 'category' in body:
+            item.name=body['category']
+        db.session.commit()
+        return jsonify(item.serialize()), 200
+        
+    elif request.method=='DELETE':
+        item = Product.query.get(item_id)
+        if item is None:
+            raise APIException('Item not found', status_code=404)
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({}), 204
 
 
+#Admin Main Menu Page
+
+@app.route('/orders', methods=['GET'])
+def get_all_orders():
+    orders = Orders.query.all() #way to get all the orders
+    seri_orders= []
+    for order in orders:
+        seri_orders.append(order.serialize())
+    print(orders)
+    return jsonify(seri_orders), 200
+
+<<<<<<< HEAD
 @app.route('/add', methods=['POST'])
 def add_menu_item():
     body = request.get_json()
@@ -201,6 +244,10 @@ def delete_menu_item(id):
     response_body = {
         "msg": "Hello, you just deleted a menu item"
     }
+=======
+
+
+>>>>>>> 0e56ce40d11fcfcea6e73dff5887cae6e395c6c1
     
 
 # this only runs if `$ python src/main.py` is executed

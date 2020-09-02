@@ -32,7 +32,8 @@ class Vendor(db.Model):
             "vendor_name": self.vendor_name,
             "email": self.email,
             "phone": self.phone,
-            "orders": self.orders
+            "orders": self.orders,
+            "products": list(map(lambda x:x.serialize(), self.products))
             # do not serialize the password, its a security breach
         }
 
@@ -70,13 +71,13 @@ class Product(db.Model):
     price=db.Column(db.Float(asdecimal=True), nullable=False)
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
     order_items=db.relationship('OrderItem', backref='product', lazy=True)
-
-    def __init__(self, name, category, price, vendor_id):
+    description=db.Column(db.String(1000), nullable=False)
+    def __init__(self, name, category, price, description, vendor_id):
         self.name = name
         self.category = category
         self.price=price
         self.vendor_id= vendor_id
-
+        self.description= description
     # vendor= Product('Burger', 'Main', 5.99, 1) #ask ernesto
     
     def __ref__(self):
@@ -87,7 +88,9 @@ class Product(db.Model):
             "id":self.id,
             "name":self.name,
             "category":self.category,
-            "price":self.price,
+            "price": "{:.2}".format(self.price),
+            "description":self.description,
+            "vendor_id":self.vendor_id,
         }
 
 
