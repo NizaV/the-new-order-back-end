@@ -17,7 +17,7 @@ app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # jwt_simple config
-app.config['JWT_SECRET_KEY'] = os.environ.get("JWT_SECRET")  # Change this!
+app.config['JWT_SECRET_KEY'] = "soienfkf"  # Change this!
 jwt = JWTManager(app)
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -139,6 +139,7 @@ def handle_vendors():
     vendors=Vendor.query.filter_by(is_active=True).all()
     payload=[]
     search_name=request.args.get("name")
+    print(search_name)
     if search_name is None:
 
         for vendor in vendors:
@@ -215,7 +216,6 @@ def get_all_orders():
     print(orders)
     return jsonify(seri_orders), 200
 
-<<<<<<< HEAD
 @app.route('/add', methods=['POST'])
 def add_menu_item():
     body = request.get_json()
@@ -244,10 +244,8 @@ def delete_menu_item(id):
     response_body = {
         "msg": "Hello, you just deleted a menu item"
     }
-=======
 
 
->>>>>>> 0e56ce40d11fcfcea6e73dff5887cae6e395c6c1
     
 
 # this only runs if `$ python src/main.py` is executed
