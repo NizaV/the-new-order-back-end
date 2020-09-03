@@ -215,39 +215,8 @@ def get_all_orders():
     print(orders)
     return jsonify(seri_orders), 200
 
-<<<<<<< HEAD
-@app.route('/add', methods=['POST'])
-def add_menu_item():
-    body = request.get_json()
-    item = MenuItem(menu_item=body['menu_item'], price=body['price'], description=body['description'])
-    db.session.add(item)
-    db.session.commit()
-    print(item)
-    return jsonify(item.serialize()), 200
 
 
-@app.route('/edit/<int:id>', methods=['PUT'])
-def edit_menu_item(id):
-    body = request.get_json()
-    item = Item.query.get(id)
-    if item is None:
-        raise APIException('Menu item not found', status_code=404)
-
-
-@app.route('/delete/<int:id>', methods=['DELETE'])
-def delete_menu_item(id):
-    item = Item.query.get(id)
-    if item is None:
-        raise APIException('Item not found', status_code=404)
-    db.session.delete(item)
-    db.session.commit()
-    response_body = {
-        "msg": "Hello, you just deleted a menu item"
-    }
-=======
-
-
->>>>>>> 0e56ce40d11fcfcea6e73dff5887cae6e395c6c1
     
 
 # this only runs if `$ python src/main.py` is executed
