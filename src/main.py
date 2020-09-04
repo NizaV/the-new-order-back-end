@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Vendor, Product
+from models import db, Vendor, Product, Order
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt_identity, jwt_required
 #from models import Person
 
@@ -209,7 +209,7 @@ def menuItems(item_id=None):
 
 @app.route('/orders', methods=['GET'])
 def get_all_orders():
-    orders = Orders.query.all() #way to get all the orders
+    orders = Order.query.all() #way to get all the orders
     seri_orders= []
     for order in orders:
         seri_orders.append(order.serialize())

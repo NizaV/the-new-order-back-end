@@ -177,7 +177,7 @@ class Order(db.Model):
             "id":self.id,
             "name":self.name,
             "email":self.email,
-            "phone":self.Phone,
+            "phone":self.phone,
             "created_at":self.created_at,
             "started_at":self.started_at,
             "cancel_order":self.cancel_order,
@@ -186,6 +186,7 @@ class Order(db.Model):
             "vendor_id":self.vendor_id,
             "sub_total_price":self.sub_total_price,
             "total_price":self.total_price,
+            "order_items":list(map(lambda x:x.serialize(),self.order_items))
             
         }
 
