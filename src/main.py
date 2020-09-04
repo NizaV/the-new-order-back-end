@@ -11,7 +11,6 @@ from admin import setup_admin
 from models import db, Vendor, Product, Order
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt_identity, jwt_required
 #from models import Person
-
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
@@ -23,26 +22,20 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
-
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
 # generate sitemap with all your endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
 @app.route('/user', methods=['GET'])
 def handle_hello():
-
     response_body = {
         "msg": "Hello, this is your GET /user response "
     }
-
     return jsonify(response_body), 200
-
 @app.route('/signup', methods=['POST'])
 def handle_signup():
     input_data = request.json
@@ -66,18 +59,15 @@ def handle_signup():
         return jsonify({
             "msg": "check your keys..."
         }), 400
-
 # Provide a method to create access tokens. The create_jwt()
 # function is used to actually generate the token
 @app.route('/login', methods=['POST'])
 def login():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
-
     params = request.get_json()
     email = params.get('email', None)
     password = params.get('password', None)
-
     if not email:
         return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
@@ -93,7 +83,6 @@ def login():
     #         }), 200
     #     else: 
     #         return jsonify({"msg": "Bad email or password"}), 
-
     specific_vendor = Vendor.query.filter_by(
         email=email
     ).one_or_none()
@@ -103,7 +92,6 @@ def login():
             # Identity can be any data that is json serializable
             response = {'jwt': create_jwt(identity=specific_vendor.id), "vendor": specific_vendor.serialize()}
             return jsonify(response), 200
-
         else:
             return jsonify({
             "msg": "bad credentials"
@@ -112,7 +100,6 @@ def login():
         return jsonify({
             "msg": "bad credentials"
         }), 400
-
     # if username != 'test' or password != 'test':
     #     return jsonify({"msg": "Bad username or password"}), 401
 @app.route('/protected', methods=['GET'])
@@ -141,7 +128,6 @@ def handle_vendors():
     search_name=request.args.get("name")
     print(search_name)
     if search_name is None:
-
         for vendor in vendors:
             payload.append(vendor.serialize())
         return jsonify(payload), 200
@@ -150,10 +136,7 @@ def handle_vendors():
         for vendor in filter_vendors:
             payload.append(vendor.serialize())
         return jsonify(payload), 200
-
-
 # Item Add Edit Page
-
 @app.route('/menu-items', methods=['GET', 'POST'])
 @app.route('/menu-items/<item_id>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required
@@ -179,7 +162,6 @@ def menuItems(item_id=None):
         db.session.commit()
         print(item)
         return jsonify(item.serialize()), 201
-
     elif request.method=='PUT':
         body = request.get_json()
         item = Product.query.get(item_id)
@@ -203,10 +185,45 @@ def menuItems(item_id=None):
         db.session.delete(item)
         db.session.commit()
         return jsonify({}), 204
-
-
+@app.route('/vendor/<int:vendor_id>', methods=['PUT', 'GET', 'DELETE'])
+def get_single_vendor(vendor_id):
+    """
+    Single vendor
+    """
+    
+            
+    # GET request
+    if request.method == 'GET':
+        user1 = Vendor.query.filter_by(
+                id=vendor_id
+            ).first()
+        print("****", user1)    
+        if user1 is None:
+            raise APIException('Vendor not found', status_code=404)
+        return jsonify(user1.serialize()), 200
+    # PUT request
+    # if request.method == 'PUT':
+    #     body = request.get_json()
+    #     if body is None:
+    #         raise APIException("You need to specify the request body as a json object", status_code=400)
+    #     user1 = Person.query.get(person_id)
+    #     if user1 is None:
+    #         raise APIException('User not found', status_code=404)
+    #     if "username" in body:
+    #         user1.username = body["username"]
+    #     if "email" in body:
+    #         user1.email = body["email"]
+    #     db.session.commit()
+    #     return jsonify(user1.serialize()), 200
+    # # DELETE request
+    # if request.method == 'DELETE':
+    #     user1 = Person.query.get(person_id)
+    #     if user1 is None:
+    #         raise APIException('User not found', status_code=404)
+    #     db.session.delete(user1)
+    #     return "ok", 200
+    return "Invalid Method", 404
 #Admin Main Menu Page
-
 @app.route('/orders', methods=['GET'])
 def get_all_orders():
     orders = Order.query.all() #way to get all the orders
@@ -215,12 +232,8 @@ def get_all_orders():
         seri_orders.append(order.serialize())
     print(orders)
     return jsonify(seri_orders), 200
-
-
-
-    
-
-# this only runs if `$ python src/main.py` is executed
+    # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+

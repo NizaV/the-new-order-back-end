@@ -24,7 +24,7 @@ class Vendor(db.Model):
     # products=[] #ask ernesto
 
     def __repr__(self):
-        return '<Vendor %r>' % self.vendor
+        return '<Vendor %r>' % self.vendor_name
 
     def serialize(self):
         return {
