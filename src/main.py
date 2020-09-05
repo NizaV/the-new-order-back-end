@@ -201,27 +201,6 @@ def get_single_vendor(vendor_id):
         if user1 is None:
             raise APIException('Vendor not found', status_code=404)
         return jsonify(user1.serialize()), 200
-    # PUT request
-    # if request.method == 'PUT':
-    #     body = request.get_json()
-    #     if body is None:
-    #         raise APIException("You need to specify the request body as a json object", status_code=400)
-    #     user1 = Person.query.get(person_id)
-    #     if user1 is None:
-    #         raise APIException('User not found', status_code=404)
-    #     if "username" in body:
-    #         user1.username = body["username"]
-    #     if "email" in body:
-    #         user1.email = body["email"]
-    #     db.session.commit()
-    #     return jsonify(user1.serialize()), 200
-    # # DELETE request
-    # if request.method == 'DELETE':
-    #     user1 = Person.query.get(person_id)
-    #     if user1 is None:
-    #         raise APIException('User not found', status_code=404)
-    #     db.session.delete(user1)
-    #     return "ok", 200
     return "Invalid Method", 404
 #Admin Main Menu Page
 @app.route('/orders', methods=['GET'])
@@ -233,7 +212,18 @@ def get_all_orders():
     print(orders)
     return jsonify(seri_orders), 200
     # this only runs if `$ python src/main.py` is executed
+
+
+#User Main Menu
+@app.route('/vendor-public-menu/<int:vendor_id>', methods=['GET'])
+def get_public_menu(vendor_id):
+    products = Product.query.filter_by(vendor_id = vendor_id).all()
+    seri_products = []
+    for product in products:
+        seri_products.append(product.serialize())
+    print(seri_products)
+    return jsonify(seri_products), 200
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
-
