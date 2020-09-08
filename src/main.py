@@ -170,11 +170,11 @@ def menuItems(item_id=None):
         if 'name' in body:
             item.name=body['name']
         if 'price' in body:
-            item.name=body['price']
+            item.price=body['price']
         if 'description' in body:
-            item.name=body['description']
+            item.description=body['description']
         if 'category' in body:
-            item.name=body['category']
+            item.category=body['category']
         db.session.commit()
         return jsonify(item.serialize()), 200
         
