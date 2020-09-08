@@ -224,6 +224,9 @@ def get_public_menu(vendor_id):
     print(seri_products)
     return jsonify(seri_products), 200
 
+# @app.route('/payment', methods=['POST'])
+# def create_order(name, email, phone, sub_total_price, total_price, order_items):
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
