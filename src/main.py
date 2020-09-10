@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Vendor, Product, Order
+from models import db, Vendor, Product, Order, OrderItem
 from flask_jwt_simple import JWTManager, create_jwt, get_jwt_identity, jwt_required
 #from models import Person
 app = Flask(__name__)
@@ -214,7 +214,7 @@ def get_all_orders():
     # this only runs if `$ python src/main.py` is executed
 
 
-#User Main Menu
+#User Main Menu and Send Order
 @app.route('/vendor-public-menu/<int:vendor_id>', methods=['GET'])
 def get_public_menu(vendor_id):
     products = Product.query.filter_by(vendor_id = vendor_id).all()
@@ -223,6 +223,55 @@ def get_public_menu(vendor_id):
         seri_products.append(product.serialize())
     print(seri_products)
     return jsonify(seri_products), 200
+
+@app.route('/create-order', methods=['POST'])
+def create_order():
+    input_data = request.json
+   
+    if 'name' in input_data and 'email' in input_data and 'phone' in input_data:
+        new_order = Order(
+            name = input_data['name'],
+            email = input_data['email'],
+            phone = input_data['phone'],
+            sub_total_price = input_data['sub_total_price'],
+            total_price = input_data['total_price'],
+            expected_pickup = input_data['expected_pickup'],
+            vendor_id = input_data['vendor_id'],
+            started_at = None,
+            cancel_order = None,
+            closed_at = None,
+            created_at = None
+        )
+        db.session.add(new_order)
+        try:
+            db.session.commit()
+            return jsonify(new_order.serialize()), 201
+        except Exception as error:
+            db.session.rollback()
+            return jsonify({
+                "msg": error.args
+            }), 500
+    else:
+        return jsonify({
+            "msg": "order not processed"
+        }), 400
+
+@app.route('/order-item', methods=['POST', 'GET'])
+def handle_order_item():
+    # POST request
+    if request.method == 'POST':
+        body = request.get_json()
+       
+        user1 = OrderItem(order_id=body['order_id'], product_id=body['product_id'], quantity=body['quantity'], unit_price=body['unit_price'], special_instructions=body['special_instructions'])
+        db.session.add(user1)
+        db.session.commit()
+        return "ok", 200
+    # GET request
+    if request.method == 'GET':
+        all_people = OrderItem.query.all()
+        all_people = list(map(lambda x: x.serialize(), all_people))
+        return jsonify(all_people), 200
+    return "Invalid Method", 404
 
 # @app.route('/payment', methods=['POST'])
 # def create_order(name, email, phone, sub_total_price, total_price, order_items):

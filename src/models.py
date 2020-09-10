@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from decimal import Decimal
 
 db = SQLAlchemy()
 
@@ -32,7 +33,7 @@ class Vendor(db.Model):
             "vendor_name": self.vendor_name,
             "email": self.email,
             "phone": self.phone,
-            "orders": self.orders,
+            "orders": list(map(lambda x:x.serialize(), self.orders)),
             "products": list(map(lambda x:x.serialize(), self.products))
             # do not serialize the password, its a security breach
         }
@@ -46,11 +47,12 @@ class OrderItem(db.Model):
     unit_price=db.Column(db.Float(asdecimal=True), nullable=False)
     special_instructions=db.Column(db.String(1000), nullable=True)
 
-    def __init__(self, order_id, Product_id, quantity, unit_price):
+    def __init__(self, order_id, product_id, quantity, unit_price, special_instructions):
         self.order_id = order_id
         self.product_id = product_id
         self.quantity = quantity
         self.unit_price = unit_price
+        self.special_instructions = special_instructions
     
     def __ref__(self):
          return '<OrderItem %r>'%self.order_item
@@ -59,9 +61,10 @@ class OrderItem(db.Model):
         return{
             "id":self.id,
             "order_id":self.order_id,
-            "product_id":self.produce_id,
+            "product_id":self.product_id,
             "quantity":self.quantity,
-            "unit_price":self.unit_price,
+            "unit_price":float(self.unit_price),
+            "special_instructions":self.special_instructions
         }
 
 class Product(db.Model):
@@ -161,12 +164,17 @@ class Order(db.Model):
     payment = db.relationship('Payment', backref='order', uselist=False) 
     order_items = db.relationship('OrderItem', backref='order', lazy=True)
 
-    def __init__(self, name, email, phone, created_at, started_at, cancel_order, close_at, expected_pickup, vendor_id, sub_total_price, total_price):
+    def __init__(self, name, email, phone, created_at, started_at, cancel_order, closed_at, expected_pickup, vendor_id, sub_total_price, total_price):
         self.name = name
         self.email = email
         self.phone = phone
         self.created_at = created_at
         self.started_at = started_at
+        self.closed_at = closed_at
+        self.vendor_id = vendor_id
+        self.expected_pickup = expected_pickup
+        self.sub_total_price = sub_total_price
+        self.total_price = total_price
         #sub_total_price = None ???
 
     def __ref__(self):
@@ -178,14 +186,14 @@ class Order(db.Model):
             "name":self.name,
             "email":self.email,
             "phone":self.phone,
-            "created_at":self.created_at,
+            "created_at": self.created_at.strftime("%d/%m/%y"),
             "started_at":self.started_at,
             "cancel_order":self.cancel_order,
             "closed_at":self.closed_at,
-            "expected_pickup":self.expected_pickup,
+            "expected_pickup": self.created_at.strftime("%d/%m/%y"),
             "vendor_id":self.vendor_id,
-            "sub_total_price":self.sub_total_price,
-            "total_price":self.total_price,
+            "sub_total_price":float(self.sub_total_price),
+            "total_price":float(self.total_price),
             "order_items":list(map(lambda x:x.serialize(),self.order_items))
             
         }
