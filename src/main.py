@@ -275,7 +275,7 @@ def handle_order_item():
 
 # @app.route('/payment', methods=['POST'])
 # def create_order(name, email, phone, sub_total_price, total_price, order_items):
-#comment
+
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
