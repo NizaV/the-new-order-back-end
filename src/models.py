@@ -197,5 +197,3 @@ class Order(db.Model):
             "order_items":list(map(lambda x:x.serialize(),self.order_items))
             
         }
-
-# models
